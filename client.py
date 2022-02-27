@@ -43,7 +43,7 @@ class Client:
 
         self.msg_label = tkinter.Label(self.window, text="Message:", bg="lightgray")
         self.msg_label.config(font=("casual", 12))
-        self.msg_label.pack(padx=20, pady=5)
+        self.msg_label.pack(padx=2, pady=3)
 
         self.input = tkinter.Text(self.window, height=3)
         self.input.pack(padx=20, pady=5)
@@ -52,7 +52,7 @@ class Client:
         self.send_button.pack(padx=20, pady=5)
 
         self.exit_button = tkinter.Button(self.window, text="exit")
-        self.send_button.pack(padx=20, pady=5)
+        self.exit_button.pack(padx=20, pady=5)
 
         self.gui_done = True
         self.window.protocol("WM_DELETE_WINDOW", self.stop)
