@@ -21,8 +21,17 @@ def send_all(message):
 def handle(client):
     while True:
         try:
-            message = client.recv(1024)
-            send_all(message)
+            message = client.recv(1024).decode('utf-8')
+            if 'left' in message:
+                send_all(message.encode('utf-8'))
+                ind = clients.index(client)
+                clients.remove(client)
+                client.close()
+                names.pop(ind)
+            elif message == 'online':
+                client.send(names.__repr__())
+            else:
+                send_all(message)
         except:
             ind = clients.index(client)
             clients.remove(client)
@@ -40,12 +49,17 @@ def recieve():
 
         names.append(name)
         clients.append(client)
+        print(client)
 
         send_all(f"{name} connect to the server\n".encode('utf-8'))
-        client.send("connect".encode('utf-8'))
 
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
+
+
+# def show_online():
+#     for client in clients:
+#         if client.list_online:
 
 
 recieve()
