@@ -1,7 +1,8 @@
 import socket
 import threading
 
-HOST = '10.0.0.5'
+HOST = '10.9.3.159'
+# HOST = '10.0.0.5'
 PORT = 6666
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -23,22 +24,24 @@ def handle(client):
         try:
             message = client.recv(1024).decode('utf-8')
             if 'left' in message:
+                print('fed')
                 send_all(message.encode('utf-8'))
                 ind = clients.index(client)
                 clients.remove(client)
                 client.close()
                 names.pop(ind)
             elif message == 'online':
-                client.send(names.__repr__())
+                x = "list" + names.__repr__()
+                client.send(x.encode('utf-8'))
             else:
-                send_all(message)
+                send_all(message.encode('utf-8'))
         except:
-            ind = clients.index(client)
-            clients.remove(client)
-            client.close()
-            name = names[ind]
-            names.remove(name)
             break
+            # ind = clients.index(client)
+            # clients.remove(client)
+            # client.close()
+            # name = names[ind]
+            # names.remove(name)
 
 
 def recieve():
@@ -57,9 +60,5 @@ def recieve():
         thread.start()
 
 
-# def show_online():
-#     for client in clients:
-#         if client.list_online:
-
-
 recieve()
+

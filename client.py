@@ -4,7 +4,9 @@ import tkinter
 import tkinter.scrolledtext
 from tkinter import simpledialog
 
-HOST = '10.0.0.5'
+
+HOST = '10.9.3.159'
+# HOST = '10.0.0.5'
 PORT = 6666
 
 
@@ -19,7 +21,6 @@ class Client:
         msg.withdraw()
 
         self.name = simpledialog.askstring("Name", "Enter your name", parent=msg)
-
         self.gui_done = False
         self.running = True
 
@@ -30,7 +31,6 @@ class Client:
         recieve_thread.start()
 
     def gui_loop(self):
-
         self.window = tkinter.Tk()
         self.window.geometry("690x480+400+100")
         self.window.title("chat")
@@ -45,7 +45,7 @@ class Client:
         self.files_button = tkinter.Button(self.window, text="server files", padx=20, pady=5)
         self.files_button.grid(row=0, column=2)
 
-        self.clear_button = tkinter.Button(self.window, text="clear", command=self.write, padx=2, pady=5)
+        self.clear_button = tkinter.Button(self.window, text="clear", command=self.clear, padx=2, pady=5)
         self.clear_button.grid(row=0, column=3)
 
         self.text_area = tkinter.scrolledtext.ScrolledText(self.window, height=20, width=50)
@@ -105,13 +105,15 @@ class Client:
         self.running = False
         self.window.destroy()
         self.sock.close()
+        exit(0)
 
     def list_online(self):
         messege = "online"
         self.sock.send(messege.encode('utf-8'))
-        answer = self.sock.recv(1024).decode('utf-8')
-        online_window = tkinter.Toplevel()
-        my_label = tkinter.Label(online_window, text=answer)
+
+    def clear(self):
+        self.text_area.delete('1.0', 'end')
+
 
     def write(self):
         messege = f"{self.name}: {self.input.get('1.0', 'end')}"
@@ -124,6 +126,14 @@ class Client:
                 messege = self.sock.recv(1024).decode('utf-8')
                 if messege == 'NAME':
                     self.sock.send(self.name.encode('utf-8'))
+                elif "list" in messege:
+                    print(messege)
+                    online_window = tkinter.Tk()
+                    online_window.geometry("172x120+400+100")
+                    online_window.title("online")
+                    online_window.configure(bg="lightblue")
+                    tkinter.Label(online_window, bg="lightblue", text=messege).pack()
+                    online_window.mainloop()
                 else:
                     if self.gui_done:
                         self.text_area.config(state='normal')
