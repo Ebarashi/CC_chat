@@ -4,23 +4,32 @@ import tkinter
 import tkinter.scrolledtext
 from tkinter import simpledialog
 
-
-HOST = '10.9.3.159'
 # HOST = '10.0.0.5'
 PORT = 6666
 
 
 class Client:
 
-    def __init__(self, host, port):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((host, port))
-
+    def __init__(self, port):
         msg = tkinter.Tk()
         msg.geometry("50x50+400+100")
         msg.withdraw()
-
         self.name = simpledialog.askstring("Name", "Enter your name", parent=msg)
+        self.serverIp = simpledialog.askstring("ServerIP", "Enter  server ip(exp 10.0.0.4):", parent=msg)
+        self.sock = None
+        while self.sock is None and self.serverIp != 'exit':
+            try:
+                host = self.serverIp
+                self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.sock.connect((host, port))
+            except:
+                self.serverIp = simpledialog.askstring("ServerIP",
+                                                       "IP WAS NOT CORRECT PLZ TRY AGAIN\n write exit for stopping",
+                                                       parent=msg)
+                self.sock = None
+        if self.serverIp == 'exit':
+            exit(0)
+
         self.gui_done = False
         self.running = True
 
@@ -114,7 +123,6 @@ class Client:
     def clear(self):
         self.text_area.delete('1.0', 'end')
 
-
     def write(self):
         messege = f"{self.name}: {self.input.get('1.0', 'end')}"
         self.sock.send(messege.encode('utf-8'))
@@ -144,4 +152,4 @@ class Client:
                 break
 
 
-client = Client(HOST, PORT)
+client = Client(PORT)
