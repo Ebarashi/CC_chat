@@ -1,9 +1,8 @@
 import socket
 import threading
-import argparse
-from sys import argv
+import server_files
 
-HOST = '10.0.0.5'
+HOST = '10.0.0.4'
 # '10.0.0.4'
 # HOST = '10.0.0.5'
 PORT = 6666
@@ -35,7 +34,11 @@ def handle(client):
             #     client.close()
             #     names.pop(ind)
             if message == 'online':
-                x = "list" + names.__repr__()
+                x = "users+" + names.__repr__()
+                client.send(x.encode('utf-8'))
+            if message == 'severFiles':
+                #more code needed
+                x = "server files:+" + names.__repr__()
                 client.send(x.encode('utf-8'))
             elif 'private' == header:
                 name, private_m = (message.split('+')[1], message.split('+')[2])

@@ -53,7 +53,7 @@ class Client:
         self.list_button = tkinter.Button(self.window, text="online list", command=self.list_online, padx=10, pady=5)
         self.list_button.grid(row=0, column=1)
 
-        self.files_button = tkinter.Button(self.window, text="server files", padx=20, pady=5)
+        self.files_button = tkinter.Button(self.window, text="server files", padx=20, pady=5,command=self.show_files)
         self.files_button.grid(row=0, column=2)
 
         self.clear_button = tkinter.Button(self.window, text="clear", command=self.clear, padx=2, pady=5)
@@ -115,7 +115,9 @@ class Client:
         self.window.destroy()
         self.sock.close()
         exit(0)
-
+    def show_files(self):
+        message = "severFiles"
+        self.sock.send(message.encode('utf-8'))
     def list_online(self):
         message = "online"
         self.sock.send(message.encode('utf-8'))
@@ -140,12 +142,20 @@ class Client:
         while self.running:
             try:
                 message = self.sock.recv(1024).decode('utf-8')
+                header = message.split('+')[0]
                 if message == 'NAME':
                     self.sock.send(self.name.encode('utf-8'))
-                elif 'list' in message:
+                elif 'users' == header:
                     online_window = tkinter.Tk()
                     online_window.geometry("172x120+400+100")
                     online_window.title("online")
+                    online_window.configure(bg="lightblue")
+                    tkinter.Label(online_window, bg="lightblue", text=message).pack()
+                    online_window.mainloop()
+                elif 'sever files:' ==header:
+                    online_window = tkinter.Tk()
+                    online_window.geometry("172x120+400+100")
+                    online_window.title("server files")
                     online_window.configure(bg="lightblue")
                     tkinter.Label(online_window, bg="lightblue", text=message).pack()
                     online_window.mainloop()
