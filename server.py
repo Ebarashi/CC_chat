@@ -1,6 +1,6 @@
 import socket
 import threading
-import server_files
+import os
 
 HOST = '10.0.0.4'
 # '10.0.0.4'
@@ -36,9 +36,10 @@ def handle(client):
             if message == 'online':
                 x = "users+" + names.__repr__()
                 client.send(x.encode('utf-8'))
-            if message == 'severFiles':
+            elif message == 'severFiles':
+                print('in server files')
                 #more code needed
-                x = "server files:+" + names.__repr__()
+                x = "server files:+" +os.listdir('C//..//server_files').__repr__()
                 client.send(x.encode('utf-8'))
             elif 'private' == header:
                 name, private_m = (message.split('+')[1], message.split('+')[2])
