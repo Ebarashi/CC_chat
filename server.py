@@ -36,20 +36,20 @@ def handle(client):
             if message == 'online':
                 x = "users+" + names.__repr__()
                 client.send(x.encode('utf-8'))
-            elif message == 'severFiles':
+            elif message == 'serverFiles':
                 print('in server files')
-                #more code needed
-                x = "server files:+" +os.listdir('C//..//server_files').__repr__()
+                x = "server files:+" + os.listdir(os.getcwd() + '/server_files').__repr__()#'c/../server_files'
+                print("after creting the str")
                 client.send(x.encode('utf-8'))
             elif 'private' == header:
                 name, private_m = (message.split('+')[1], message.split('+')[2])
-                name = name[0:len(name)-1:]
+                name = name[0:len(name) - 1:]
                 try:
                     ind = names.index(name)
                     to_client = clients[ind]
                     client.send(f"private to {name}{private_m[13 + len(names[clients.index(client)])::]}".encode())
                     to_client.send(private_m.encode("utf-8"))
-                except (socket.error, ValueError,IndexError):
+                except (socket.error, ValueError, IndexError):
                     client.send(f"server: wrong name".encode('utf-8'))
             else:
                 send_all(message.encode('utf-8'))

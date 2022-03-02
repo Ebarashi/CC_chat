@@ -117,7 +117,7 @@ class Client:
         exit(0)
 
     def show_files(self):
-        message = "severFiles"
+        message = "serverFiles"
         self.sock.send(message.encode('utf-8'))
 
     def list_online(self):
@@ -145,7 +145,7 @@ class Client:
             try:
                 message = self.sock.recv(1024).decode('utf-8')
                 header = message.split('+')[0]
-
+                print(header)
                 if message == 'NAME':
                     self.sock.send(self.name.encode('utf-8'))
                 elif 'users' == header:
