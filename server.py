@@ -1,7 +1,10 @@
 import socket
 import threading
+import argparse
+from sys import argv
 
-HOST = '10.0.0.4'
+HOST = '10.0.0.5'
+# '10.0.0.4'
 # HOST = '10.0.0.5'
 PORT = 6666
 
@@ -23,25 +26,40 @@ def handle(client):
     while True:
         try:
             message = client.recv(1024).decode('utf-8')
-            if 'left' in message:
-                print('fed')
+            print(message)
+            header = message.split('+')[0]
+            # if 'left' == header:
+            #     send_all(message.split('+')[1].encode('utf-8'))
+            #     ind = clients.index(client)
+            #     clients.remove(client)
+            #     client.close()
+            #     names.pop(ind)
+            if message == 'online':
+                x = "list" + names.__repr__()
+                client.send(x.encode('utf-8'))
+            elif 'private' == header:
+                name, private_m = (message.split('+')[1], message.split('+')[2])
+                name = name[0:len(name)-1:]
+                try:
+                    ind = names.index(name)
+                    to_client = clients[ind]
+                    client.send(f"private to {name}{private_m[13 + len(names[clients.index(client)])::]}".encode())
+                    to_client.send(private_m.encode("utf-8"))
+                except (socket.error, ValueError,IndexError):
+                    client.send(f"server: wrong name".encode('utf-8'))
+            else:
                 send_all(message.encode('utf-8'))
+        except socket.error:
+            try:
                 ind = clients.index(client)
                 clients.remove(client)
                 client.close()
-                names.pop(ind)
-            elif message == 'online':
-                x = "list" + names.__repr__()
-                client.send(x.encode('utf-8'))
-            else:
-                send_all(message.encode('utf-8'))
-        except:
-            break
-            # ind = clients.index(client)
-            # clients.remove(client)
-            # client.close()
-            # name = names[ind]
-            # names.remove(name)
+                message1 = f"{names[ind]} left"
+                send_all(message1.encode('utf-8'))
+                name = names[ind]
+                names.remove(name)
+            except:
+                client.close()
 
 
 def recieve():
@@ -50,15 +68,13 @@ def recieve():
         client.send("NAME".encode('utf-8'))
         name = client.recv(1024).decode('utf-8')
 
-        names.append(name)
-        clients.append(client)
-        print(client)
+        send_all(f"{name} connected to the server\n".encode('utf-8'))
 
-        send_all(f"{name} connect to the server\n".encode('utf-8'))
+        names.append(str(name))
+        clients.append(client)
 
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
 
 
 recieve()
-

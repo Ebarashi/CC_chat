@@ -2,7 +2,7 @@ import socket
 import threading
 import tkinter
 import tkinter.scrolledtext
-from tkinter import simpledialog
+from tkinter import simpledialog, END
 
 # HOST = '10.0.0.5'
 PORT = 6666
@@ -15,12 +15,13 @@ class Client:
         msg.geometry("50x50+400+100")
         msg.withdraw()
         self.name = simpledialog.askstring("Name", "Enter your name", parent=msg)
-        self.serverIp = simpledialog.askstring("ServerIP", "Enter  server ip(exp 10.0.0.4):", parent=msg)
+        self.serverIp = simpledialog.askstring("ServerIP", "Enter server ip(exp 10.0.0.4):", parent=msg)
         self.sock = None
         while self.sock is None and self.serverIp != 'exit':
             try:
                 host = self.serverIp
                 self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                print(self.sock)
                 self.sock.connect((host, port))
             except:
                 self.serverIp = simpledialog.askstring("ServerIP",
@@ -35,6 +36,7 @@ class Client:
 
         gui_thread = threading.Thread(target=self.gui_loop)
         recieve_thread = threading.Thread(target=self.receive)
+        # recieve_thread = threading.Thread(target=self.receive, daemon=True)
 
         gui_thread.start()
         recieve_thread.start()
@@ -42,7 +44,7 @@ class Client:
     def gui_loop(self):
         self.window = tkinter.Tk()
         self.window.geometry("690x480+400+100")
-        self.window.title("chat")
+        self.window.title(self.name)
         self.window.configure(bg="lightgreen")
 
         self.logout_button = tkinter.Button(self.window, text="Logout", command=self.logout, padx=10, pady=5)
@@ -65,7 +67,7 @@ class Client:
         self.to_label.config(font=("Ariel", 9))
         self.to_label.grid(row=6, column=0)
 
-        self.to_input = tkinter.Text(self.window, height=2, width=15)
+        self.to_input = tkinter.Text(self.window, height=1, width=15)
         self.to_input.grid(row=7, column=0)
 
         self.msg_label = tkinter.Label(self.window, text="Message", bg="lightgray", padx=0.5, pady=1)
@@ -109,47 +111,56 @@ class Client:
         exit(0)
 
     def logout(self):
-        messege = f"{self.name}: left"
-        self.sock.send(messege.encode('utf-8'))
         self.running = False
         self.window.destroy()
         self.sock.close()
         exit(0)
 
     def list_online(self):
-        messege = "online"
-        self.sock.send(messege.encode('utf-8'))
+        message = "online"
+        self.sock.send(message.encode('utf-8'))
 
     def clear(self):
+        self.text_area.config(state='normal')
         self.text_area.delete('1.0', 'end')
+        self.text_area.config(state='disabled')
 
     def write(self):
-        messege = f"{self.name}: {self.input.get('1.0', 'end')}"
-        self.sock.send(messege.encode('utf-8'))
+        if self.to_input.compare('end-1c', '==', '1.0'):
+            message = f"{self.name}:{self.input.get('1.0', 'end')}"
+            self.sock.send(message.encode('utf-8'))
+            # self.input.delete('1.0', 'end')
+        else:
+            private_m = f"private+{self.to_input.get('1.0', 'end')}+private from {self.name}:{self.input.get('1.0', 'end')}"
+            self.sock.send(private_m.encode('utf-8'))
         self.input.delete('1.0', 'end')
+        # self.to_input.delete('1.0', 'end')
 
     def receive(self):
         while self.running:
             try:
-                messege = self.sock.recv(1024).decode('utf-8')
-                if messege == 'NAME':
+                message = self.sock.recv(1024).decode('utf-8')
+                if message == 'NAME':
                     self.sock.send(self.name.encode('utf-8'))
-                elif "list" in messege:
-                    print(messege)
+                elif 'list' in message:
                     online_window = tkinter.Tk()
                     online_window.geometry("172x120+400+100")
                     online_window.title("online")
                     online_window.configure(bg="lightblue")
-                    tkinter.Label(online_window, bg="lightblue", text=messege).pack()
+                    tkinter.Label(online_window, bg="lightblue", text=message).pack()
                     online_window.mainloop()
                 else:
                     if self.gui_done:
                         self.text_area.config(state='normal')
-                        self.text_area.insert('end', messege)
+                        self.text_area.insert('end', message)
                         self.text_area.yview('end')
                         self.text_area.config(state='disabled')
             except:
                 break
+            # try:
+            #     self.sock.close()
+            # except socket.error:
+            #     return
 
 
 client = Client(PORT)
