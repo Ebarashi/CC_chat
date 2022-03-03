@@ -2,7 +2,7 @@ import socket
 import threading
 import os
 
-HOST = '10.0.0.4'
+HOST = '10.100.102.13'
 # '10.0.0.4'
 # HOST = '10.0.0.5'
 PORT = 6666
@@ -25,7 +25,6 @@ def handle(client):
     while True:
         try:
             message = client.recv(1024).decode('utf-8')
-            print(message)
             header = message.split('+')[0]
             # if 'left' == header:
             #     send_all(message.split('+')[1].encode('utf-8'))
@@ -37,9 +36,7 @@ def handle(client):
                 x = "users+" + names.__repr__()
                 client.send(x.encode('utf-8'))
             elif message == 'serverFiles':
-                print('in server files')
-                x = "server files:+" + os.listdir(os.getcwd() + '/server_files').__repr__()#'c/../server_files'
-                print("after creting the str")
+                x = "server files:+" + os.listdir(os.getcwd() + '/server_files').__repr__()  # 'c/../server_files'
                 client.send(x.encode('utf-8'))
             elif 'private' == header:
                 name, private_m = (message.split('+')[1], message.split('+')[2])
