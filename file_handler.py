@@ -2,7 +2,6 @@ class File_handler:
     def __init__(self, file_name, MAX_BYTES):
         self.file_name = file_name
         self.max_bytes = MAX_BYTES
-        print(self.file_name)
         self.file = open(self.file_name, 'rb')
 
     def get_next_chunk(self):

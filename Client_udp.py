@@ -32,6 +32,7 @@ class StopAndWait:
 
     def recv_one_packet(self):
         byte, addr = self.socket.recvfrom(self.BUF_SIZE)
+        print(byte)
         packet = pick.loads(byte)
         print("Received packet ", packet.seqno)
         rec_cksum = packet.cksum
@@ -158,18 +159,18 @@ class Client:
         self.window.mainloop()
 
     def download(self):
-        sock = socket.socket(socket.AF_INET,  # Internet
-                             socket.SOCK_DGRAM)  # UDP
-        # sock.bind((self.serverIp, PORT_UDP))
+        sock_udp = socket.socket(socket.AF_INET,
+                                 socket.SOCK_DGRAM)  # UDP
+        # sock_udp.bind((self.serverIp, PORT_UDP))
         gen = pack.PacketGen()
-        packet = gen.gen_packet(str(self.file_input))
+        x = os.getcwd() + "\\server_files\\" + str(self.file_input.get('1.0', 'end').rstrip('\n'))
+        packet = gen.gen_packet(x)  # [0:len(self.file_input.get('1.0','end')):]
         pac_bytes = pick.dumps(packet)
-        print('hello')
-        sock.sendto(pac_bytes, (self.serverIp, PORT_UDP))
-        data, addr = sock.recvfrom(BUF_SIZE)
+        sock_udp.sendto(pac_bytes, (self.serverIp, PORT_UDP))
+        data, addr = sock_udp.recvfrom(BUF_SIZE)
         print("New socket received: ", addr)
 
-        cli = StopAndWait(str(self.save_as_input), sock, addr, 10)
+        cli = StopAndWait(str(self.save_as_input.get('1.0', 'end')).rstrip('\n'), sock_udp, addr, 10)
         cli.recv_file()
 
     def stop(self):

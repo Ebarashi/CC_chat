@@ -12,6 +12,7 @@ server.bind((HOST, PORT))
 
 server.listen()
 
+print('server listening to all connections.......')
 clients = []
 names = []
 

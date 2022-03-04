@@ -1,16 +1,15 @@
 import pack as pac_gen
 import pickle
 import pack_loss
-import socket
-import threading
 import random
 import pickle
-
-BUF_SIZE = 4096
 
 import socket
 import threading
 import os
+
+BUF_SIZE = 4096
+
 
 HOST = '10.100.102.13'
 # '10.0.0.4'
@@ -28,7 +27,7 @@ server.listen()
 
 print("Server is listening for connections")
 print("IP\t: ", HOST)
-print("PORT\t: ", PORT_UDP)
+print("PORT\t: ", PORT_UDP, PORT)
 
 clients = []
 names = []
@@ -44,6 +43,7 @@ class StopAndWait:
         self.time_out = time_out
         self.p_loss = p_loss
         self.time_out_sock = time_out * 100  # Socket timeout is 10 times the packet timeout
+        print(file_name)
         self.gen = pac_gen.PacketGen(file_name)
         self.timer = None
         self.socket.settimeout(self.time_out_sock)
@@ -54,7 +54,7 @@ class StopAndWait:
             print("Sending: packet ", packet.seqno)
             if not pack_loss.lose_packet(self.p_loss):
                 self.socket.sendto(pickle.dumps(packet), self.dest)
-            self.timer = threading.Timer(self.time_out, self.timer_handler, args=(self, packet,))
+            self.timer = threading.Timer(self.time_out, timer_handler, args=(self, packet,))
             self.timer.start()
 
             # wait for ACK or abort after a long period of time
@@ -80,14 +80,15 @@ class StopAndWait:
         end = self.gen.gen_close_packet()
         self.socket.sendto(pickle.dumps(end), self.dest)
 
-    def timer_handler(self, packet):
-        # retransmit packet to the same client
-        print("\tTimeout: retransmitting packet ", packet.seqno)
-        if not pack_loss.lose_packet(self.p_loss):
-            self.socket.sendto(pickle.dumps(packet), self.dest)
-        self.timer.cancel()
-        self.timer = threading.Timer(self.time_out, self.timer_handler, args=(self, packet,))
-        self.timer.start()
+
+def timer_handler(self, packet):
+    # retransmit packet to the same client
+    print("\tTimeout: retransmitting packet ", packet.seqno)
+    if not pack_loss.lose_packet(self.p_loss):
+        self.socket.sendto(pickle.dumps(packet), self.dest)
+    self.timer.cancel()
+    self.timer = threading.Timer(self.time_out, timer_handler, args=(self, packet,))
+    self.timer.start()
 
 
 def send_all(message):
@@ -172,7 +173,7 @@ def recieve():
         packet, rec_addr = sock.recvfrom(BUF_SIZE)
         p = pickle.loads(packet)
 
-        t = threading.Thread(target=handler, args=(p, rec_addr, HOST, 2, 0.1))
+        t = threading.Thread(target=handler, args=(p, rec_addr, HOST, 2, 0.1,))
         t.setName(str(i))
         i = i + 1
         t.start()
