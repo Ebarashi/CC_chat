@@ -144,7 +144,7 @@ class Client:
             try:
                 message = self.sock.recv(1024).decode('utf-8')
                 header = message.split('+')[0]
-                if message == 'NAME':
+                if message == 'name':
                     self.sock.send(self.name.encode('utf-8'))
                 elif 'users' == header:
                     online_window = tkinter.Toplevel(self.window)

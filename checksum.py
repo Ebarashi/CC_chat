@@ -1,10 +1,6 @@
 import math
 
 
-# Hello = "He" "ll" "o"
-# ABCD = "AB" "CD"
-
-
 def string_to_byte_arr(s):
     binary_s = ' '.join(format(ord(x), 'b').zfill(8) for x in s)  # convert each string to a binary byte in place
     byte_array = binary_s.split()  # split the binary bytes string into a array
@@ -34,5 +30,3 @@ def gen_cksum(byte_array):
     total_sum = total_sum ^ 65535  # perform 1-compliment to the total_sum using xor
     return total_sum
 
-# print (gen_cksum(string_to_byte_arr("Hello")))
-# print (gen_cksum(string_to_byte_arr("\x48\x65\x6C\x6C\x6F")))

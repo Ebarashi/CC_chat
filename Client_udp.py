@@ -32,7 +32,6 @@ class StopAndWait:
 
     def recv_one_packet(self):
         byte, addr = self.socket.recvfrom(self.BUF_SIZE)
-        print(byte)
         packet = pick.loads(byte)
         print("Received packet ", packet.seqno)
         rec_cksum = packet.cksum
@@ -67,8 +66,9 @@ class StopAndWait:
 
 
 class Client:
-
     def __init__(self, port):
+        self.sock_udp = socket.socket(socket.AF_INET,
+                                      socket.SOCK_DGRAM)
         msg = tkinter.Tk()
         msg.geometry("50x50+400+100")
         msg.withdraw()
@@ -85,20 +85,21 @@ class Client:
                                                        "IP WAS NOT CORRECT PLZ TRY AGAIN\n write exit for stopping",
                                                        parent=msg)
                 self.sock = None
+        self.sock_udp.connect((self.serverIp, PORT_UDP))
         if self.serverIp == 'exit':
             exit(0)
         msg.destroy()
         self.gui_done = False
         self.running = True
 
-        gui_thread = threading.Thread(target=self.gui_loop)
+        gui_thread = threading.Thread(target=self.gui)
         recieve_thread = threading.Thread(target=self.receive)
         # recieve_thread = threading.Thread(target=self.receive, daemon=True)
 
         gui_thread.start()
         recieve_thread.start()
 
-    def gui_loop(self):
+    def gui(self):
         self.window = tkinter.Tk()
         self.window.geometry("690x480+400+100")
         self.window.title(self.name)
@@ -159,19 +160,31 @@ class Client:
         self.window.mainloop()
 
     def download(self):
-        sock_udp = socket.socket(socket.AF_INET,
-                                 socket.SOCK_DGRAM)  # UDP
+        # while self.running:
+        # sock_udp = socket.socket(socket.AF_INET,
+        #                          socket.SOCK_DGRAM)  # UDP
         # sock_udp.bind((self.serverIp, PORT_UDP))
+
         gen = pack.PacketGen()
         x = os.getcwd() + "\\server_files\\" + str(self.file_input.get('1.0', 'end').rstrip('\n'))
         packet = gen.gen_packet(x)  # [0:len(self.file_input.get('1.0','end')):]
         pac_bytes = pick.dumps(packet)
-        sock_udp.sendto(pac_bytes, (self.serverIp, PORT_UDP))
-        data, addr = sock_udp.recvfrom(BUF_SIZE)
-        print("New socket received: ", addr)
+        self.sock_udp.sendto(pac_bytes, (self.serverIp, PORT_UDP))
+        try:
+            data, addr = self.sock_udp.recvfrom(BUF_SIZE)
+            print("New socket received: ", addr)
+            cli = StopAndWait(str(self.save_as_input.get('1.0', 'end')).rstrip('\n'), self.sock_udp,
+                              (self.serverIp, PORT_UDP), 10)
+            cli.recv_file()
+        except:
+            print('error')
+        # sock_udp.sendto(pac_bytes, (self.serverIp, PORT_UDP))
+        # data, addr = sock_udp.recvfrom(BUF_SIZE)
 
-        cli = StopAndWait(str(self.save_as_input.get('1.0', 'end')).rstrip('\n'), sock_udp, addr, 10)
-        cli.recv_file()
+        # cli = StopAndWait(str(self.save_as_input.get('1.0', 'end')).rstrip('\n'), self.sock_udp, addr, 10)
+        # cli = StopAndWait(str(self.save_as_input.get('1.0', 'end')).rstrip('\n'), sock_udp, addr, 10)
+        # print('111111')
+        # cli.recv_file()
 
     def stop(self):
         self.running = False
@@ -214,7 +227,7 @@ class Client:
             try:
                 message = self.sock.recv(1024).decode('utf-8')
                 header = message.split('+')[0]
-                if message == 'NAME':
+                if message == 'name':
                     self.sock.send(self.name.encode('utf-8'))
                 elif 'users' == header:
                     online_window = tkinter.Toplevel(self.window)

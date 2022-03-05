@@ -10,7 +10,6 @@ import os
 
 BUF_SIZE = 4096
 
-
 HOST = '10.100.102.13'
 # '10.0.0.4'
 # HOST = '10.0.0.5'
@@ -24,7 +23,6 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((HOST, PORT_UDP))
 
 server.listen()
-
 print("Server is listening for connections")
 print("IP\t: ", HOST)
 print("PORT\t: ", PORT_UDP, PORT)
@@ -43,7 +41,6 @@ class StopAndWait:
         self.time_out = time_out
         self.p_loss = p_loss
         self.time_out_sock = time_out * 100  # Socket timeout is 10 times the packet timeout
-        print(file_name)
         self.gen = pac_gen.PacketGen(file_name)
         self.timer = None
         self.socket.settimeout(self.time_out_sock)
@@ -130,7 +127,7 @@ def handle(client):
                 ind = clients.index(client)
                 clients.remove(client)
                 client.close()
-                message1 = f"{names[ind]} left"
+                message1 = f"{names[ind]} left\n"
                 send_all(message1.encode('utf-8'))
                 name = names[ind]
                 names.remove(name)
@@ -142,23 +139,25 @@ def handler(packet, rec_addr, SERVER_IP, TIMEOUT, P_LOSS):
     print("Received packet from host ", rec_addr)
     print("Acquiring new vacant socket")
     # acquire a vacant socket
-    t_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    t_sock.bind((SERVER_IP, 0))
-    t_port = t_sock.getsockname()[1]
-    print("New socket created on port ", t_port)
-    t_sock.sendto(pickle.dumps(t_port), rec_addr)
+    # t_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # t_sock.bind((SERVER_IP, 0))
+    # t_port = t_sock.getsockname()[1]
+    # print("New socket created on port ", t_port)
+    # t_sock.sendto(pickle.dumps(t_port), rec_addr)
 
-    ser = StopAndWait(packet.data, t_sock, rec_addr, TIMEOUT, P_LOSS)
+    ser = StopAndWait(packet.data, sock, rec_addr, TIMEOUT, P_LOSS)
+    # ser = StopAndWait(packet.data, t_sock, rec_addr, TIMEOUT, P_LOSS)
     ser.send()
 
     print("Done sending, destroying connection")
-    t_sock.close()
+    # t_sock.close()
+    # t_sock.shutdown(1)
 
 
 def recieve():
     while True:
         client, address = server.accept()
-        client.send("NAME".encode('utf-8'))
+        client.send("name".encode('utf-8'))
         name = client.recv(1024).decode('utf-8')
 
         send_all(f"{name} connected to the server\n".encode('utf-8'))
@@ -181,4 +180,4 @@ def recieve():
 
 recieve()
 
-sock.close()
+# sock.close()

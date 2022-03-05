@@ -67,7 +67,7 @@ def handle(client):
 def recieve():
     while True:
         client, address = server.accept()
-        client.send("NAME".encode('utf-8'))
+        client.send("name".encode('utf-8'))
         name = client.recv(1024).decode('utf-8')
 
         send_all(f"{name} connected to the server\n".encode('utf-8'))
